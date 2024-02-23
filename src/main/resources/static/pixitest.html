@@ -13,47 +13,50 @@
     <h1>PixiJS Test</h1>
     
 	<script>
+	  let width = 640;
+	  let height = 480;
+	
 	  // pixijs application frame setup
 	  const app = new PIXI.Application({
-		  width: 640,
-		  height: 360,
+		  width: width,
+		  height: height,
 		  background: '#c0c0c0',
 	  });
 	  document.body.appendChild(app.view);
 	  
-	  // add a sprite to its stage
-	  let sprite = PIXI.Sprite.from('resources/images/cancel.png'); // asynchronous load
-	  app.stage.addChild(sprite);
 	  
-	  // hook into its ticker
-	  let elapsed = 0.0;
-	  app.ticker.add((delta) => {
-		  elapsed += delta;
-		  sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
-	  });
+	  // background on which we listen for mouse events
+	  const background = PIXI.Sprite.from('resources/images/pixel_7092bf.png'); // asynchronous load
+	  background.width = width;
+	  background.height = height;
+	  app.stage.addChild(background);
+	  
+	  // note: see https://github.com/pixijs/pixijs/issues/4856 for using dots to build paths
+	  const dot = PIXI.Sprite.from('resources/images/dot_black_7x7.png');
+	  dot.anchor.set(0.5);
+	  dot2 = PIXI.Sprite.from(dot.texture);
 	  
 	  // for drawing:
 	  let isDrawing = false;
-	  
 	  // EventEmitter event scheme (https://github.com/primus/eventemitter3)
-      app.stage.eventMode = 'static';
-      app.stage.on('mousedown', (event) => { isDrawing = true; console.log('mousedown evt');});
-      app.stage.on('mouseup', (event) => { isDrawing = false; console.log('mouseup evt'); });
-      app.stage.on('mouseupoutside', (event) => { isDrawing = false; console.log('mouseupoutside evt'); });
-      app.stage.on('mousemove', (event) => { if (isDrawing) {
-          console.log('mousemove evt');
-      }});
-      
-      // these events only seem to fire on the sprite, not just anywhere on the stage's bounds.
-      // expect this to work once background image is added
+      background.eventMode = 'static';
+      background.on('mousedown', (event) => { isDrawing = true; console.log('mousedown evt');});
+      background.on('mouseup', (event) => { isDrawing = false; console.log('mouseup evt'); });
+      background.on('mouseupoutside', (event) => { isDrawing = false; console.log('mouseupoutside evt'); });
+      background.on('mousemove', (event) => { 
+    	  console.log('mousemove, isDrawing = ' + isDrawing)
+    	  if (isDrawing) {
+    		  // todo: skip new sprite if we're too close to last one from this same drawing stint
+    		  let newdot = PIXI.Sprite.from(dot.texture);
+  		      newdot.anchor.set(0.5);
+  		      newdot.x = event.x;
+  		      newdot.y = event.y;
+  		      app.stage.addChild(newdot);
+    	  }
+      });
 
-//      // PixiJS event scheme
-//      app.stage.onmousedown = (event) => { isDrawing = true; };
-//      app.stage.onmouseup = (event) => { isDrawing = false; };
-//      app.stage.onmouseupoutside = (event) => { isDrawing = false; };
-//      app.stage.omousemove = (event) => { if (isDrawing) {
-//          alert('hi');
-//      }};
+      // todo: switch to 
+      
 	</script>
 
   </body>
